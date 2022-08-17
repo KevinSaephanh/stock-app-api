@@ -7,11 +7,6 @@ export class UserController {
   constructor() {
     this.userService = new UserService();
   }
-
-  async createUser(req: Request, res: Response, next: NextFunction): Promise<any> {
-    return this.userService.createUser(req.body);
-  }
-
   async getUser(req: Request, res: Response, next: NextFunction): Promise<any> {
     return this.userService.getUser(req.params.id);
   }

@@ -3,23 +3,16 @@ import { logger } from "../utils/logger";
 export class UserService {
   constructor() {}
 
-  async createUser(user: any) {
-    try {
-      logger.info(`Creating user with data: ${user}`);
-    } catch (err) {
-      logger.error(new Error(err));
-    }
-  }
-
-  async getUser(id: string) {
+  async getUser(id: string): Promise<any> {
     try {
       logger.info(`Retrieving user with id: ${id}`);
+      // await User.findById(id).select("-password");
     } catch (err) {
       logger.error(new Error(err));
     }
   }
 
-  async updateUser(id: string, body: any) {
+  async updateUser(id: string, body: any): Promise<any> {
     try {
       logger.info(`Updating user with id: ${id}`);
     } catch (err) {
@@ -27,7 +20,7 @@ export class UserService {
     }
   }
 
-  async deleteUser(id: string) {
+  async deleteUser(id: string): Promise<void> {
     try {
       logger.info(`Deleting user with id: ${id}`);
     } catch (err) {
