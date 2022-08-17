@@ -5,18 +5,17 @@ import * as express from "express";
 export class UserRouter {
   public router: Router;
 
-  private userControler: UserController;
+  private userController: UserController;
 
   constructor() {
-    this.userControler = new UserController();
+    this.userController = new UserController();
     this.router = express.Router();
     this.registerRoutes();
   }
 
   protected registerRoutes() {
-    this.router.post("/", this.userControler.createUser);
-    this.router.get("/:id", this.userControler.getUser);
-    this.router.put("/:id", this.userControler.updateUser);
-    this.router.delete("/:id", this.userControler.deleteUser);
+    this.router.get("/:id", this.userController.getUser);
+    this.router.put("/:id", this.userController.updateUser);
+    this.router.delete("/:id", this.userController.deleteUser);
   }
 }

@@ -1,16 +1,31 @@
 import * as express from "express";
+import config from "./config/config";
+import { routes } from "./routes";
+import { logger } from "./utils/logger";
 
-export class App {
+class App {
   public app: express.Application;
-  private router: express.Router;
 
   constructor() {
     this.app = express();
-    this.router = express.Router();
     this.config();
+    this.connectToDatabase();
   }
 
-  private config() {}
+  start() {
+    this.app.listen(config.port, () => {
+      logger.info(`App listening on the port ${config.port}`);
+    });
+  }
 
-  private configureMiddleware() {}
+  private config() {
+    this.app.use(express.json());
+    this.app.use(express.urlencoded({ extended: true }));
+    routes(this.app);
+  }
+
+  private connectToDatabase() {}
 }
+
+const app = new App();
+app.start();

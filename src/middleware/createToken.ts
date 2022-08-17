@@ -1,17 +1,18 @@
 import { sign } from "jsonwebtoken";
+import config from "../config/config";
 
 export const createAccessToken = (user: any) => {
-  return sign({ userId: user.id }, process.env.ACCESS_TOKEN_SECRET!, {
-    expiresIn: "15m",
+  return sign({ userId: user.id }, config.auth.accessTokenSecret, {
+    expiresIn: config.auth.accessTokenExpiresIn,
   });
 };
 
 export const createRefreshToken = (user: any) => {
   return sign(
     { userId: user.id, tokenVersion: user.tokenVersion },
-    process.env.REFRESH_TOKEN_SECRET!,
+    config.auth.refreshTokenSecret,
     {
-      expiresIn: "7d",
+      expiresIn: config.auth.refreshTokenExpiresIn,
     }
   );
 };
