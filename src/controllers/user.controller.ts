@@ -8,14 +8,17 @@ export class UserController {
     this.userService = new UserService();
   }
   async getUser(req: Request, res: Response, next: NextFunction): Promise<any> {
-    return this.userService.getUser(req.params.id);
+    const user = await this.userService.getUser(req.params.id);
+    res.status(200).send({ user });
   }
 
   async updateUser(req: Request, res: Response, next: NextFunction): Promise<any> {
-    return this.userService.updateUser(req.params.id, req.body);
+    const user = await this.userService.updateUser(req.params.id, req.body);
+    res.status(200).send({ user });
   }
 
   async deleteUser(req: Request, res: Response, next: NextFunction): Promise<void> {
-    return this.userService.deleteUser(req.params.id);
+    await this.userService.deleteUser(req.params.id);
+    res.status(204).send();
   }
 }
