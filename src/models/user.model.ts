@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document } from "mongoose";
 import { Roles } from "./role.model";
 
-export interface User extends Document {
+export interface UserDocument extends Document {
   email: string;
   username: string;
   password: string;
@@ -19,6 +19,7 @@ const UserSchema: Schema = new Schema({
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Role",
+      default: Roles.User,
     },
   ],
   isActive: { type: Boolean, default: false },
@@ -26,4 +27,4 @@ const UserSchema: Schema = new Schema({
   updatedAt: { type: Date, default: Date.now },
 });
 
-export default mongoose.model<User>("User", UserSchema);
+export const User = mongoose.model<UserDocument>("User", UserSchema);

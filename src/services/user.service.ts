@@ -1,3 +1,5 @@
+import { User } from "src/models/user.model";
+import { ApiError } from "src/utils/apiError";
 import { logger } from "../utils/logger";
 
 export class UserService {
@@ -8,7 +10,7 @@ export class UserService {
       logger.info(`Retrieving user with id: ${id}`);
       // await User.findById(id).select("-password");
     } catch (err) {
-      logger.error(new Error(err));
+      throw new ApiError(400, err);
     }
   }
 
@@ -16,7 +18,7 @@ export class UserService {
     try {
       logger.info(`Updating user with id: ${id}`);
     } catch (err) {
-      logger.error(new Error(err));
+      throw new ApiError(400, err);
     }
   }
 
@@ -24,7 +26,7 @@ export class UserService {
     try {
       logger.info(`Deleting user with id: ${id}`);
     } catch (err) {
-      logger.error(new Error(err));
+      throw new ApiError(400, err);
     }
   }
 }

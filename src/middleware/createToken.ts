@@ -1,8 +1,8 @@
 import { sign } from "jsonwebtoken";
 import config from "../config/config";
 
-export const createAccessToken = (user: any) => {
-  return sign({ userId: user.id }, config.auth.accessTokenSecret, {
+export const createAccessToken = (userId: number) => {
+  return sign({ userId: userId }, config.auth.accessTokenSecret, {
     expiresIn: config.auth.accessTokenExpiresIn,
   });
 };
