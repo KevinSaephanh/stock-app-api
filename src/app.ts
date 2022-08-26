@@ -1,5 +1,6 @@
-import * as express from "express";
+import express from "express";
 import config from "./config/config";
+import { errorHandler } from "./middleware/errorHandler";
 import { routes } from "./routes";
 import { logger } from "./utils/logger";
 
@@ -21,6 +22,7 @@ class App {
   private config() {
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
+    this.app.use(errorHandler);
     routes(this.app);
   }
 

@@ -1,5 +1,3 @@
-import { logger } from "./logger";
-
 export class ApiError extends Error {
   statusCode: number;
   isOperational: boolean;
@@ -8,8 +6,12 @@ export class ApiError extends Error {
     super(message);
     this.statusCode = statusCode;
     this.isOperational = isOperational;
+  }
 
-    // Log error
-    logger.error({ status: statusCode, message });
+  get JSON() {
+    return {
+      message: this.message,
+      stack: this.stack,
+    };
   }
 }
