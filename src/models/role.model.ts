@@ -5,7 +5,7 @@ export enum Roles {
   User = "user",
 }
 
-export interface Role extends Document {
+export interface RoleDocument extends Document {
   type: string;
   description: string;
   createdAt: Date;
@@ -22,4 +22,4 @@ const RoleSchema: Schema = new Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
-export default mongoose.model<Role>("Role", RoleSchema);
+export const Role = mongoose.model<RoleDocument>("Role", RoleSchema);

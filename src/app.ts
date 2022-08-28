@@ -1,8 +1,8 @@
 import express from "express";
 import config from "./config/config";
 import { errorHandler } from "./middleware/errorHandler";
-import { routes } from "./routes";
 import { logger } from "./utils/logger";
+import UserRouter from "./routes/user.routes";
 
 class App {
   public app: express.Application;
@@ -23,7 +23,7 @@ class App {
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
     this.app.use(errorHandler);
-    routes(this.app);
+    this.app.use("/users", UserRouter);
   }
 
   private connectToDatabase() {}

@@ -1,25 +1,14 @@
 import { Router } from "express";
-import * as express from "express";
-import { AuthController } from "../controllers/auth.controller";
+import * as authController from "../controllers/auth.controller";
 
-export class AuthRouter {
-  public router: Router;
+const router = Router();
 
-  private authController: AuthController;
+router.get("/signup", authController.signup);
+router.put("/login", authController.login);
+router.delete("/logout", authController.logout);
+router.get("/refresh-token", authController.refreshToken);
+router.put("/reset-password", authController.resetPassword);
+router.delete("/send-verification-email", authController.sendVerificationEmail);
+router.delete("/verify-email", authController.verifyEmail);
 
-  constructor() {
-    this.authController = new AuthController();
-    this.router = express.Router();
-    this.registerRoutes();
-  }
-
-  protected registerRoutes() {
-    this.router.get("/signup", this.authController.signup);
-    this.router.put("/login", this.authController.login);
-    this.router.delete("/logout", this.authController.logout);
-    this.router.get("/refresh-token", this.authController.refreshToken);
-    this.router.put("/reset-password", this.authController.resetPassword);
-    this.router.delete("/send-verification-email", this.authController.sendVerificationEmail);
-    this.router.delete("/verify-email", this.authController.verifyEmail);
-  }
-}
+export default router;
