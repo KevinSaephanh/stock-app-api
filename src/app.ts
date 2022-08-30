@@ -4,7 +4,6 @@ import { errorHandler } from "./middleware/errorHandler";
 import { logger } from "./utils/logger";
 import UserRoutes from "./routes/user.routes";
 import AuthRoutes from "./routes/auth.routes";
-import { ApiError } from "./utils/apiError";
 import { connect } from "./config/db";
 
 const main = async () => {
@@ -28,8 +27,4 @@ const main = async () => {
   });
 };
 
-try {
-  main();
-} catch (err) {
-  throw new ApiError(400, err.message);
-}
+main();
