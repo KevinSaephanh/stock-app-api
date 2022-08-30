@@ -5,44 +5,31 @@ import { logger } from "./utils/logger";
 import UserRoutes from "./routes/user.routes";
 import AuthRoutes from "./routes/auth.routes";
 import { ApiError } from "./utils/apiError";
-import mongoose from "mongoose";
+import { connect } from "./config/db";
 
-class App {
-  public app: express.Application;
+const main = async () => {
+  const app = express();
 
-  constructor() {
-    this.app = express();
-    this.configMiddleware();
-    this.configRoutes();
-    this.connectToDatabase();
-  }
+  // Connect to db
+  await connect();
 
-  start() {
-    this.app.listen(config.port, () => {
-      logger.info(`App listening on the port ${config.port}`);
-    });
-  }
+  // Config middleware
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
+  app.use(errorHandler);
 
-  private configMiddleware() {
-    this.app.use(express.json());
-    this.app.use(express.urlencoded({ extended: true }));
-    this.app.use(errorHandler);
-  }
+  // Config routes
+  app.use("/users", UserRoutes);
+  app.use("/auth", AuthRoutes);
 
-  private configRoutes() {
-    this.app.use("/users", UserRoutes);
-    this.app.use("/auth", AuthRoutes);
-  }
+  // Start listening
+  app.listen(config.port, () => {
+    logger.info(`App listening on the port ${config.port}`);
+  });
+};
 
-  private async connectToDatabase() {
-    try {
-      const conn = await mongoose.connect(config.mongoose.url);
-      logger.info(`MongoDB Connected: ${conn.connection.host}`);
-    } catch (err) {
-      throw new ApiError(400, err.message);
-    }
-  }
+try {
+  main();
+} catch (err) {
+  throw new ApiError(400, err.message);
 }
-
-const app = new App();
-app.start();

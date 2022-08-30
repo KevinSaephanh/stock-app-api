@@ -12,7 +12,7 @@ export default {
     saltRounds: +process.env.SALT_ROUNDS!,
   },
   mongoose: {
-    url: process.env.MONGODB_URL! + (process.env.NODE_ENV! === "development" ? "-test" : ""),
+    url: process.env.MONGODB_URL!,
     options: {
       useCreateIndex: true,
       useNewUrlParser: true,
