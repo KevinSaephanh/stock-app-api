@@ -16,13 +16,25 @@ const customPasswordValidation = (value: string, customHelpers: Joi.CustomHelper
   return value;
 };
 
+export const emailValidator = Joi.string().required().max(50).email();
+export const usernameValidator = Joi.string().min(3).max(25).required();
+export const passwordValidator = Joi.string().required().custom(customPasswordValidation);
+
+export const email = Joi.object().keys({ email: emailValidator });
+
+export const password = Joi.object().keys({ password: passwordValidator });
+
 export const signup = Joi.object().keys({
-  email: Joi.string().required().max(50).email(),
-  username: Joi.string().min(3).max(25).required(),
-  password: Joi.string().required().custom(customPasswordValidation),
+  email: emailValidator,
+  username: usernameValidator,
+  password: passwordValidator,
 });
 
 export const login = Joi.object().keys({
   email: Joi.string().required(),
   password: Joi.string().required(),
+});
+
+export const updateUser = Joi.object().keys({
+  username: usernameValidator,
 });

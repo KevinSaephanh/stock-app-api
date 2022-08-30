@@ -4,6 +4,8 @@ import { errorHandler } from "./middleware/errorHandler";
 import { logger } from "./utils/logger";
 import UserRoutes from "./routes/user.routes";
 import AuthRoutes from "./routes/auth.routes";
+import { ApiError } from "./utils/apiError";
+import mongoose from "mongoose";
 
 class App {
   public app: express.Application;
@@ -32,7 +34,14 @@ class App {
     this.app.use("/auth", AuthRoutes);
   }
 
-  private connectToDatabase() {}
+  private async connectToDatabase() {
+    try {
+      const conn = await mongoose.connect(config.mongoose.url);
+      logger.info(`MongoDB Connected: ${conn.connection.host}`);
+    } catch (err) {
+      throw new ApiError(400, err.message);
+    }
+  }
 }
 
 const app = new App();
