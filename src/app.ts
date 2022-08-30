@@ -2,8 +2,8 @@ import express from "express";
 import config from "./config/config";
 import { errorHandler } from "./middleware/errorHandler";
 import { logger } from "./utils/logger";
-import UserRouter from "./routes/user.routes";
-import AuthRouter from "./routes/auth.routes";
+import UserRoutes from "./routes/user.routes";
+import AuthRoutes from "./routes/auth.routes";
 
 class App {
   public app: express.Application;
@@ -28,8 +28,8 @@ class App {
   }
 
   private configRoutes() {
-    this.app.use("/users", UserRouter);
-    this.app.use("/auth", AuthRouter);
+    this.app.use("/users", UserRoutes);
+    this.app.use("/auth", AuthRoutes);
   }
 
   private connectToDatabase() {}

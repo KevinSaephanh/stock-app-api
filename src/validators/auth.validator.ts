@@ -16,17 +16,13 @@ const customPasswordValidation = (value: string, customHelpers: Joi.CustomHelper
   return value;
 };
 
-export const registerSchema = {
-  body: Joi.object().keys({
-    email: Joi.string().required().max(50).email(),
-    username: Joi.string().min(3).max(25).required(),
-    password: Joi.string().required().custom(customPasswordValidation),
-  }),
-};
+export const signup = Joi.object().keys({
+  email: Joi.string().required().max(50).email(),
+  username: Joi.string().min(3).max(25).required(),
+  password: Joi.string().required().custom(customPasswordValidation),
+});
 
-export const loginSchema = {
-  body: Joi.object().keys({
-    email: Joi.string().required(),
-    password: Joi.string().required(),
-  }),
-};
+export const login = Joi.object().keys({
+  email: Joi.string().required(),
+  password: Joi.string().required(),
+});

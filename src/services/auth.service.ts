@@ -1,15 +1,13 @@
 import { logger } from "../utils/logger";
 import bcrypt from "bcrypt";
-import { SignupRequest } from "../requests/signup.request";
 import { createAccessToken, createRefreshToken } from "../middleware/createToken";
-import { LoginRequest } from "../requests/login.request";
 import { ApiError } from "../utils/apiError";
 import config from "../config/config";
 import { Response } from "express";
 import User from "../models/user.model";
 import { sendRefreshToken } from "../middleware/sendRefreshToken";
 
-export const signup = async (body: SignupRequest) => {
+export const signup = async (body: any) => {
   try {
     const { username, email, password } = body;
     const emailExists = await User.findOne({ email });
@@ -33,7 +31,7 @@ export const signup = async (body: SignupRequest) => {
   }
 };
 
-export const login = async (body: LoginRequest, res: Response) => {
+export const login = async (body: any, res: Response) => {
   try {
     const { email, password } = body;
     let verifyPassword = false;

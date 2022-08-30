@@ -1,5 +1,4 @@
 import { Request, Response } from "express";
-import { LoginRequest } from "../requests/login.request";
 import * as authService from "../services/auth.service";
 
 export const signup = async (req: Request, res: Response) => {
@@ -7,7 +6,7 @@ export const signup = async (req: Request, res: Response) => {
   res.status(201).send();
 };
 
-export const login = async (req: Request<LoginRequest>, res: Response) => {
+export const login = async (req: Request, res: Response) => {
   const response = await authService.login(req.body, res);
   res.status(200).send(response);
 };
