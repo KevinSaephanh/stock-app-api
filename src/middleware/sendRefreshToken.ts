@@ -1,8 +1,10 @@
 import { Response } from "express";
+import config from "../config/config";
 
-export const sendRefreshToken = (res: Response, token: string) => {
-  res.cookie("jid", token, {
+export const sendRefreshToken = (refreshToken: string, res: Response) => {
+  res.cookie("refresh-token", refreshToken, {
     httpOnly: true,
-    path: "/refresh-token",
+    secure: config.env === "production",
+    path: "/",
   });
 };

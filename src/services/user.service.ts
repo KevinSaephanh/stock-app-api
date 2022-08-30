@@ -1,7 +1,7 @@
 import { ApiError } from "../utils/apiError";
 import { logger } from "../utils/logger";
 
-export const getUser = async (id: string): Promise<any> => {
+export const getUser = async (id: string) => {
   try {
     logger.info(`Retrieving user with id: ${id}`);
     // await User.findById(id).select("-password");
@@ -11,7 +11,7 @@ export const getUser = async (id: string): Promise<any> => {
   }
 };
 
-export const updateUser = async (id: string, body: any): Promise<any> => {
+export const updateUser = async (id: string, body: any) => {
   try {
     console.log(body);
     logger.info(`Updating user with id: ${id}`);
@@ -20,7 +20,7 @@ export const updateUser = async (id: string, body: any): Promise<any> => {
   }
 };
 
-export const deleteUser = async (id: string): Promise<void> => {
+export const deleteUser = async (id: string) => {
   try {
     logger.info(`Deleting user with id: ${id}`);
   } catch (err) {

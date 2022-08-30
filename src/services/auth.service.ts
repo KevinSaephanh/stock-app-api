@@ -1,14 +1,15 @@
 import { logger } from "../utils/logger";
 import bcrypt from "bcrypt";
 import { SignupRequest } from "../requests/signup.request";
-import { createAccessToken } from "../middleware/createToken";
-import { User } from "../models/user.model";
+import { createAccessToken, createRefreshToken } from "../middleware/createToken";
 import { LoginRequest } from "../requests/login.request";
-import { LoginResponse } from "../responses/login.response";
 import { ApiError } from "../utils/apiError";
 import config from "../config/config";
+import { Response } from "express";
+import User from "../models/user.model";
+import { sendRefreshToken } from "../middleware/sendRefreshToken";
 
-export const signup = async (body: SignupRequest): Promise<void> => {
+export const signup = async (body: SignupRequest) => {
   try {
     const { username, email, password } = body;
     const emailExists = await User.findOne({ email });
@@ -32,7 +33,7 @@ export const signup = async (body: SignupRequest): Promise<void> => {
   }
 };
 
-export const login = async (body: LoginRequest): Promise<LoginResponse> => {
+export const login = async (body: LoginRequest, res: Response) => {
   try {
     const { email, password } = body;
     let verifyPassword = false;
@@ -43,17 +44,20 @@ export const login = async (body: LoginRequest): Promise<LoginResponse> => {
 
     if (!user || !verifyPassword) throw new ApiError(404, "Username and/or password is incorrect");
 
-    const token = createAccessToken(user.id);
-    return {
-      user,
-      token,
-    };
+    // Create tokens
+    const accessToken = createAccessToken(user.id);
+    const refreshToken = createRefreshToken(user);
+
+    // Create secure cookie with refresh token
+    sendRefreshToken(refreshToken, res);
+
+    return { user, accessToken };
   } catch (err) {
     throw new ApiError(400, err);
   }
 };
 
-export const logout = async (id: string): Promise<void> => {
+export const logout = async (id: string) => {
   try {
     logger.info(`Deleting user with id: ${id}`);
   } catch (err) {
@@ -61,8 +65,12 @@ export const logout = async (id: string): Promise<void> => {
   }
 };
 
-export const refreshToken = async (refreshToken: string): Promise<any> => {
+export const refreshToken = async (refreshToken: string) => {
   logger.info(`Refreshing token: ${refreshToken}`);
+  try {
+  } catch (err) {
+    throw new ApiError(403, err);
+  }
 };
 
 export const resetPassword = async (user: any): Promise<any> => {
