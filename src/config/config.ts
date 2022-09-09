@@ -6,10 +6,11 @@ export default {
   auth: {
     accessTokenSecret: process.env.ACCESS_TOKEN_SECRET!,
     refreshTokenSecret: process.env.REFRESH_TOKEN_SECRET!,
+    verifyEmailTokenSecret: process.env.VERIFY_EMAIL_TOKEN_SECRET!,
     accessTokenExpiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN!,
     refreshTokenExpiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN!,
     verifyEmailTokenExpiresIn: process.env.VERIFY_EMAIL_TOKEN_EXPIRES_IN!,
-    saltRounds: +process.env.SALT_ROUNDS!,
+    saltRounds: process.env.SALT_ROUNDS!,
   },
   mongoose: {
     url: process.env.MONGODB_URL!,

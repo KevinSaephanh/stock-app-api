@@ -1,5 +1,7 @@
 import mongoose, { Schema, Document } from "mongoose";
 import { Roles } from "./role.model";
+import bcrypt from "bcrypt";
+import config from "../config/config";
 
 interface UserDocument extends Document {
   email: string;
@@ -11,7 +13,7 @@ interface UserDocument extends Document {
   updatedAt: Date;
 }
 
-const UserSchema: Schema = new Schema({
+const userSchema: Schema = new Schema({
   email: { type: String, required: true, unique: true },
   username: { type: String, required: true, unique: true },
   password: { type: String, required: true },
@@ -27,4 +29,19 @@ const UserSchema: Schema = new Schema({
   updatedAt: { type: Date, default: Date.now },
 });
 
-export default mongoose.model<UserDocument>("User", UserSchema);
+userSchema.pre<UserDocument>("save", async function (next) {
+  const user = this;
+
+  if (!user.isModified("password")) return next();
+
+  const hash = await bcrypt.hash(user.password, config.auth.saltRounds);
+  user.password = hash;
+
+  next();
+});
+
+userSchema.methods.comparePassword = async function (password: string) {
+  return await bcrypt.compare(password, this.password);
+};
+
+export default mongoose.model<UserDocument>("User", userSchema);

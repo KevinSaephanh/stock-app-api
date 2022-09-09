@@ -4,13 +4,13 @@ import config from "../config/config";
 import { ApiError } from "../utils/apiError";
 
 export const isAuth = (req: Request, res: Response, next: NextFunction) => {
-  const token = req.headers["authorization"];
+  let token = req.headers["authorization"];
 
   if (!token) return res.status(403).send({ message: "No token provided!" });
 
   try {
-    const decoded = verify(token, config.auth.accessTokenSecret);
-    res.locals.token = decoded;
+    token = token.split(" ")[1];
+    verify(token, config.auth.accessTokenSecret);
     return next();
   } catch (err) {
     throw new ApiError(401, "Unauthorized!");

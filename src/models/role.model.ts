@@ -1,8 +1,8 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 export enum Roles {
-  Admin = "admin",
-  User = "user",
+  Admin,
+  User,
 }
 
 export interface RoleDocument extends Document {
@@ -11,15 +11,15 @@ export interface RoleDocument extends Document {
   createdAt: Date;
 }
 
-const RoleSchema: Schema = new Schema({
+const roleSchema: Schema = new Schema({
   type: {
     type: String,
     enum: Object.values(Roles),
-    default: Roles.User,
+    unique: true,
     required: true,
   },
   description: { type: String },
   createdAt: { type: Date, default: Date.now },
 });
 
-export default mongoose.model<RoleDocument>("Role", RoleSchema);
+export default mongoose.model<RoleDocument>("Role", roleSchema);

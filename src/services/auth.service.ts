@@ -1,74 +1,61 @@
 import { logger } from "../utils/logger";
 import bcrypt from "bcrypt";
-import { createAccessToken, createRefreshToken } from "../middleware/createToken";
 import { ApiError } from "../utils/apiError";
-import config from "../config/config";
-import { Response } from "express";
+import { Request, NextFunction, Response } from "express";
 import User from "../models/user.model";
-import { sendRefreshToken } from "../middleware/sendRefreshToken";
+import * as tokenService from "./token.service";
+import * as userRepository from "../repositories/user.repository";
 
-export const signup = async (body: any) => {
+export const signup = async (body: any, next: NextFunction) => {
+  const { username, email, password } = body;
+  const emailExists = await userRepository.getByEmail(email);
+  const usernameExists = await userRepository.getByUsername(username);
+
+  if (emailExists || usernameExists) return next(new ApiError(400, "User already exists"));
+
+  const user = new User({
+    username,
+    email,
+    password,
+  });
+  await user.save();
+};
+
+export const login = async (body: any, res: Response, next: NextFunction) => {
+  const { email, password } = body;
+  let verifyPassword = false;
+  const user = await userRepository.getByEmail(email);
+
+  // Compare passwords is user exists
+  if (user) verifyPassword = bcrypt.compareSync(password, user.password);
+
+  if (!user || !verifyPassword)
+    return next(new ApiError(404, "Username and/or password is incorrect"));
+
+  // Create tokens and set
+  const { accessToken, refreshToken } = tokenService.signTokens(user.id);
+  tokenService.setRefreshToken(refreshToken, res);
+
+  return { user, accessToken };
+};
+
+export const logout = async (res: Response) => {
   try {
-    const { username, email, password } = body;
-    const emailExists = await User.findOne({ email });
-    const usernameExists = await User.findOne({ username });
-
-    // Throw error is user exists
-    if (emailExists || usernameExists) throw new ApiError(400, "User already exists");
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, config.auth.saltRounds);
-
-    // Create new user and save
-    const user = new User({
-      username,
-      email,
-      password: hashedPassword,
-    });
-    User.create(user);
+    tokenService.clearTokens(res);
   } catch (err) {
     throw new ApiError(400, err);
   }
 };
 
-export const login = async (body: any, res: Response) => {
-  try {
-    const { email, password } = body;
-    let verifyPassword = false;
-    const user = await User.findOne({ email });
+export const refreshToken = async (req: Request, res: Response, next: NextFunction) => {
+  const refreshToken = req.cookies["refresh_token"];
+  const decoded: any = tokenService.verifyToken(refreshToken, "refresh_token");
+  const user = await userRepository.getById(decoded.id);
 
-    // Compare passwords is user exists
-    if (user) verifyPassword = bcrypt.compareSync(password, user.password);
+  if (!user) return next(new ApiError(401, "Unauthenticated!"));
 
-    if (!user || !verifyPassword) throw new ApiError(404, "Username and/or password is incorrect");
-
-    // Create tokens
-    const accessToken = createAccessToken(user.id);
-    const refreshToken = createRefreshToken(user);
-
-    // Create secure cookie with refresh token
-    sendRefreshToken(refreshToken, res);
-
-    return { user, accessToken };
-  } catch (err) {
-    throw new ApiError(400, err);
-  }
-};
-
-export const logout = async (id: string) => {
-  try {
-    logger.info(`Deleting user with id: ${id}`);
-  } catch (err) {
-    throw new ApiError(400, err);
-  }
-};
-
-export const refreshToken = async (refreshToken: string) => {
-  logger.info(`Refreshing token: ${refreshToken}`);
-  try {
-  } catch (err) {
-    throw new ApiError(403, err);
-  }
+  const accessToken = tokenService.signAccessToken(user.id);
+  res.status(200).send(accessToken);
 };
 
 export const resetPassword = async (user: any): Promise<any> => {

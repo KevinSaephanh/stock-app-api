@@ -3,12 +3,12 @@ import * as userService from "../services/user.service";
 
 export const getUser = async (req: Request, res: Response): Promise<any> => {
   const user = await userService.getUser(req.params.id);
-  res.status(200).send({ user });
+  res.status(200).send(user);
 };
 
 export const updateUser = async (req: Request, res: Response): Promise<any> => {
   const user = await userService.updateUser(req.params.id, req.body);
-  res.status(200).send({ user });
+  res.status(200).send(user);
 };
 
 export const deleteUser = async (req: Request, res: Response): Promise<void> => {
