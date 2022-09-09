@@ -2,9 +2,8 @@ import express from "express";
 import config from "./config/config";
 import { errorHandler } from "./middleware/errorHandler";
 import { logger } from "./utils/logger";
-import UserRoutes from "./routes/user.routes";
-import AuthRoutes from "./routes/auth.routes";
 import { connect } from "./config/db";
+import routes from "./routes";
 
 const main = async () => {
   const app = express();
@@ -18,8 +17,7 @@ const main = async () => {
   app.use(errorHandler);
 
   // Config routes
-  app.use("/users", UserRoutes);
-  app.use("/auth", AuthRoutes);
+  app.use("/api/v1", routes);
 
   // Start listening
   app.listen(config.port, () => {

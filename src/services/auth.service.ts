@@ -52,12 +52,10 @@ export const refreshToken = async (req: Request, next: NextFunction) => {
   return accessToken;
 };
 
-export const resetPassword = async (id: number, next: NextFunction) => {
-  try {
-    console.log(id);
-  } catch (err) {
-    return next(new ApiError(400, err));
-  }
+export const resetPassword = async ({ email }: { email: string }, next: NextFunction) => {
+  const user = await userRepository.getByEmail(email);
+
+  if (!user) return next(new ApiError(404, "Email invalid"));
 };
 
 export const updatePassword = async (

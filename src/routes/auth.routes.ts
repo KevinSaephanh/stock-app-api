@@ -12,7 +12,12 @@ router.post("/logout", isAuth, asyncWrap(authController.logout));
 router.post("/refresh-token", asyncWrap(authController.refreshToken));
 router.post("/:id/change-email", validateRequest("email"));
 router.post("/:id/change-password", validateRequest("password"));
-router.put("/reset-password", validateRequest("email"), asyncWrap(authController.resetPassword));
+router.patch("/reset-password", asyncWrap(authController.resetPassword));
+router.patch(
+  "/:id/update-password",
+  validateRequest("password"),
+  asyncWrap(authController.updatePassword)
+);
 router.post("/send-verification-email", asyncWrap(authController.sendEmail));
 router.post("/verify-email", asyncWrap(authController.verifyEmail));
 
