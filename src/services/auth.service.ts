@@ -28,26 +28,20 @@ export const login = async (body: any, res: Response, next: NextFunction) => {
 
   // Compare passwords is user exists
   if (user) verifyPassword = bcrypt.compareSync(password, user.password);
-
-  if (!user || !verifyPassword)
-    return next(new ApiError(404, "Username and/or password is incorrect"));
+  if (!verifyPassword) return next(new ApiError(404, "Username and/or password is incorrect"));
 
   // Create tokens and set
-  const { accessToken, refreshToken } = tokenService.signTokens(user.id);
+  const { accessToken, refreshToken } = tokenService.signTokens(user!.id);
   tokenService.setRefreshToken(refreshToken, res);
 
   return { user, accessToken };
 };
 
 export const logout = async (res: Response) => {
-  try {
-    tokenService.clearTokens(res);
-  } catch (err) {
-    throw new ApiError(400, err);
-  }
+  tokenService.clearTokens(res);
 };
 
-export const refreshToken = async (req: Request, res: Response, next: NextFunction) => {
+export const refreshToken = async (req: Request, next: NextFunction) => {
   const refreshToken = req.cookies["refresh_token"];
   const decoded: any = tokenService.verifyToken(refreshToken, "refresh_token");
   const user = await userRepository.getById(decoded.id);
@@ -55,29 +49,43 @@ export const refreshToken = async (req: Request, res: Response, next: NextFuncti
   if (!user) return next(new ApiError(401, "Unauthenticated!"));
 
   const accessToken = tokenService.signAccessToken(user.id);
-  res.status(200).send(accessToken);
+  return accessToken;
 };
 
-export const resetPassword = async (user: any): Promise<any> => {
+export const resetPassword = async (id: number, next: NextFunction) => {
   try {
-    logger.info(`Resetting password for user with ID: ${user.id}`);
+    console.log(id);
   } catch (err) {
-    throw new ApiError(400, err);
+    return next(new ApiError(400, err));
   }
 };
 
-export const sendVerificationEmail = async (user: any): Promise<any> => {
+export const updatePassword = async (
+  id: number,
+  { password }: { password: string },
+  next: NextFunction
+) => {
+  const user = await userRepository.getById(id);
+
+  if (!user) return next(new ApiError(400, `User with id: ${id} not found`));
+  else {
+    user.password = password;
+    await user.save();
+  }
+};
+
+export const sendVerificationEmail = async (user: any, next: NextFunction) => {
   try {
     logger.info(`Sending verification email for user with ID: ${user.id}`);
   } catch (err) {
-    throw new ApiError(400, err);
+    return next(new ApiError(400, err));
   }
 };
 
-export const verifyEmail = async (user: any): Promise<any> => {
+export const verifyEmail = async (token: string, next: NextFunction) => {
   try {
-    logger.info(`Verifying email for user with ID: ${user.id}`);
+    console.log(token);
   } catch (err) {
-    throw new ApiError(400, err);
+    return next(new ApiError(400, err));
   }
 };
