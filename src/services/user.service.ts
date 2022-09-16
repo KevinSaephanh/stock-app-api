@@ -1,29 +1,29 @@
 import { ApiError } from "../utils/apiError";
-import { logger } from "../utils/logger";
+import User from "../models/user.model";
 
-export const getUser = async (id: string) => {
-  try {
-    logger.info(`Retrieving user with id: ${id}`);
-    // await User.findById(id).select("-password");
-    return "asfasf";
-  } catch (err) {
-    throw new ApiError(400, err);
-  }
+export const getAll = async () => {
+  return await User.find();
 };
 
-export const updateUser = async (id: string, body: any) => {
-  try {
-    console.log(body);
-    logger.info(`Updating user with id: ${id}`);
-  } catch (err) {
-    throw new ApiError(400, err);
-  }
+export const getById = async (id: number) => {
+  const user = await User.findById(id);
+  if (!user) throw new ApiError(404, `User with id: ${id} not found`);
+  return user;
 };
 
-export const deleteUser = async (id: string) => {
-  try {
-    logger.info(`Deleting user with id: ${id}`);
-  } catch (err) {
-    throw new ApiError(400, err);
-  }
+export const getByEmail = async (email: string) => {
+  const user = await User.findOne({ email });
+  if (!user) throw new ApiError(404, `User with email: ${email} not found`);
+  return user;
+};
+
+export const getByUsername = async (username: string) => {
+  const user = await User.findOne({ username });
+  if (!user) throw new ApiError(404, `User with username: ${username} not found`);
+  return user;
+};
+
+export const update = async (id: number, body: any) => {
+  const user = await getById(id);
+  console.log(user, body);
 };

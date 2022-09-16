@@ -1,4 +1,3 @@
-// import { Router } from "express";
 import { Router } from "express";
 import * as userController from "../controllers/user.controller";
 import { asyncWrap } from "../middleware/asyncWrap";
