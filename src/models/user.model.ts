@@ -1,13 +1,17 @@
-import mongoose, { Schema, Document } from "mongoose";
-import { Roles } from "./role.model";
-import bcrypt from "bcrypt";
-import config from "../config/config";
+import mongoose, { Schema, Document } from 'mongoose';
+import bcrypt from 'bcrypt';
+import config from '../config/config';
+
+export enum Role {
+  Admin,
+  User,
+}
 
 interface UserDocument extends Document {
   email: string;
   username: string;
   password: string;
-  roles: Roles[];
+  roles: Role[];
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -16,12 +20,12 @@ interface UserDocument extends Document {
 const userSchema: Schema = new Schema({
   email: { type: String, required: true, unique: true },
   username: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
+  password: { type: String, required: true, select: false },
   roles: [
     {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Role",
-      default: Roles.User,
+      type: String,
+      enum: Role,
+      default: 'User',
     },
   ],
   isActive: { type: Boolean, default: false },
@@ -29,10 +33,10 @@ const userSchema: Schema = new Schema({
   updatedAt: { type: Date, default: Date.now },
 });
 
-userSchema.pre<UserDocument>("save", async function (next) {
+userSchema.pre<UserDocument>('save', async function (next) {
   const user = this;
 
-  if (!user.isModified("password")) return next();
+  if (!user.isModified('password')) return next();
 
   const hash = await bcrypt.hash(user.password, config.auth.saltRounds);
   user.password = hash;
@@ -44,4 +48,4 @@ userSchema.methods.comparePassword = async function (password: string) {
   return await bcrypt.compare(password, this.password);
 };
 
-export default mongoose.model<UserDocument>("User", userSchema);
+export default mongoose.model<UserDocument>('User', userSchema);

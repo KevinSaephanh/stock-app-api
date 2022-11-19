@@ -1,18 +1,18 @@
-import { NextFunction, Request, Response } from "express";
-import { verify } from "jsonwebtoken";
-import config from "../config/config";
-import { ApiError } from "../utils/apiError";
+import type { Request, Response } from 'express';
+import { verify } from 'jsonwebtoken';
+import config from '../config/config';
+import { ApiError } from '../utils/apiError';
+import { asyncWrap } from './asyncWrap';
 
-export const isAuth = (req: Request, res: Response, next: NextFunction) => {
-  let token = req.headers["authorization"];
+export const isAuth = asyncWrap(async (req: Request, _res: Response) => {
+  let token = req.headers['authorization'];
+  token = token?.split(' ')?.[1];
 
-  if (!token) return res.status(403).send({ message: "No token provided!" });
+  if (token === undefined) throw new ApiError(403, 'No token provided!');
 
   try {
-    token = token.split(" ")[1];
     verify(token, config.auth.accessTokenSecret);
-    return next();
   } catch (err) {
-    throw new ApiError(401, "Unauthorized!");
+    throw new ApiError(401, 'Unauthorized!');
   }
-};
+});

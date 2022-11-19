@@ -1,86 +1,85 @@
-import bcrypt from "bcrypt";
-import config from "../config/config";
-import { ApiError } from "../utils/apiError";
-import { verify } from "jsonwebtoken";
-import JwtPayload from "../interfaces/JwtPayload";
-import { sendVerificationEmail } from "../utils/sendVerificationEmail";
-import { Request, Response } from "express";
-import * as tokenService from "./token.service";
-import * as userService from "./user.service";
-import User from "../models/user.model";
+import bcrypt, { hash } from 'bcrypt';
+import config from '../config/config';
+import { ApiError } from '../utils/apiError';
+import { Request, Response } from 'express';
+import User from '../models/user.model';
+import { TokenService } from './token.service';
+import { UserService } from './user.service';
+import { MailerService } from './mailer.service';
+import { JwtPayload } from 'jsonwebtoken';
 
-export const signup = async (body: any) => {
-  const { username, email, password } = body;
-  const emailExists = await User.findOne({ email });
-  const usernameExists = await User.findOne({ username });
+export class AuthService {
+  private readonly userService = new UserService();
+  private readonly tokenService = new TokenService();
+  private readonly mailerService = new MailerService();
 
-  if (emailExists || usernameExists) throw new ApiError(400, "User already exists");
+  signup = async (body: any) => {
+    const { username, email, password } = body;
+    const emailExists = await User.findOne({ email });
+    const usernameExists = await User.findOne({ username });
 
-  const user = new User({
-    username,
-    email,
-    password,
-  });
-  await user.save();
-};
+    if (emailExists || usernameExists) throw new ApiError(400, 'User already exists');
 
-export const login = async (body: any, res: Response) => {
-  const { email, password } = body;
-  let verifyPassword = false;
-  const user = await userService.getByEmail(email);
+    await User.create({
+      username,
+      email,
+      password,
+    });
+    await this.sendVerificationEmail({ email });
+  };
 
-  // Compare passwords is user exists
-  if (user) verifyPassword = bcrypt.compareSync(password, user.password);
+  login = async (body: any, res: Response) => {
+    const { email, password } = body;
+    let verifyPassword = false;
+    const user = await this.userService.getByEmail(email);
 
-  if (!user || !verifyPassword) throw new ApiError(400, "Username and/or password is incorrect");
+    // Compare passwords is user exists
+    if (user) verifyPassword = bcrypt.compareSync(password, user.password);
 
-  if (!user.isActive) throw new ApiError(400, "Email is not verified!");
+    if (!user || !verifyPassword) throw new ApiError(400, 'Username and/or password is incorrect');
 
-  // Create tokens and set
-  const { accessToken, refreshToken } = tokenService.signTokens(user.id);
-  tokenService.setRefreshToken(refreshToken, res);
-  return accessToken;
-};
+    if (!user.isActive) throw new ApiError(400, 'Email is not verified!');
 
-export const logout = async (res: Response) => {
-  tokenService.clearTokens(res);
-};
+    // Create tokens and set
+    const { accessToken } = this.tokenService.signTokens(user.id, res);
+    return accessToken;
+  };
 
-export const refreshToken = async (req: Request) => {
-  const refreshToken = req.cookies["refresh_token"];
-  const decoded: any = tokenService.verifyToken(refreshToken, "refresh_token");
-  const user = await userService.getById(decoded.id);
-  const accessToken = tokenService.signAccessToken(user.id);
-  return accessToken;
-};
+  logout = async (res: Response) => {
+    this.tokenService.clearTokens(res);
+  };
 
-export const resetPassword = async (id: number) => {
-  console.log(id);
-  // Send email with token in params
-};
+  refreshToken = async (req: Request) => {
+    const refreshToken = req.cookies['refresh_token'];
+    const decoded: any = this.tokenService.verifyToken(refreshToken, 'refresh');
+    const user = await this.userService.getById(decoded.id);
+    const accessToken = this.tokenService.signAccessToken(user.id);
+    return accessToken;
+  };
 
-export const updatePassword = async (id: number, body: any) => {
-  const { token, password } = body;
-  console.log(token, password, id);
-  // Validate token and set new password
-};
+  resetPassword = async ({ email }: { email: string }) => {
+    const user = await User.findOne({ email });
+    if (!user) throw new ApiError(404, `User with email: ${email} does not exist`);
+    const token = this.tokenService.createEmailToken(user.id);
+    return token;
+  };
 
-export const sendEmail = async (body: any) => {
-  const { email, id } = body;
-  const token = tokenService.createEmailToken(id);
-  await sendVerificationEmail({ token, to: email });
-};
+  updatePassword = async (token: string, password: string) => {
+    let { id } = (await this.tokenService.verifyToken(token, 'email')) as JwtPayload;
+    const hashedPassword = await hash(password, config.auth.saltRounds);
+    return await this.userService.update(id, { password: hashedPassword });
+  };
 
-export const verifyEmail = async (token: string, res: Response) => {
-  const { id } = verify(token, config.auth.verifyEmailTokenSecret) as JwtPayload;
-  const user = await userService.getById(id);
+  sendVerificationEmail = async ({ email }: { email: string }) => {
+    const user = await this.userService.getByEmail(email);
+    const token = this.tokenService.createEmailToken(user.id);
+    await this.mailerService.sendVerificationEmail(email, user.username, token);
+  };
 
-  user.isActive = true;
-  await user.save();
-
-  // Create tokens and set
-  const { accessToken, refreshToken } = tokenService.signTokens(user.id);
-  tokenService.setRefreshToken(refreshToken, res);
-
-  return accessToken;
-};
+  verifyEmail = async (token: string, { password }: { password: string }, res: Response) => {
+    const user = await this.updatePassword(token, password);
+    await this.userService.update(user?.id, { isActive: true });
+    const { accessToken } = this.tokenService.signTokens(user?.id, res);
+    return accessToken;
+  };
+}

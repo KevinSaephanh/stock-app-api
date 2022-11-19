@@ -1,5 +1,7 @@
-import { Router } from "express";
+import { Router } from 'express';
+import { WatchlistController } from '../controllers/watchlist.controller';
 
-const router = Router();
+const watchlistController = new WatchlistController();
+const router = Router({ mergeParams: true });
 
 export default router;

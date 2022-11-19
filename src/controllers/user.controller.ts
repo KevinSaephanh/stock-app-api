@@ -1,12 +1,16 @@
-import { Request, Response } from "express";
-import * as userService from "../services/user.service";
+import { Request, Response } from 'express';
+import { UserService } from '../services/user.service';
 
-export const getUser = async (req: Request, res: Response) => {
-  const user = await userService.getById(+req.params.id);
-  res.status(200).send(user);
-};
+export class UserController {
+  private readonly userService = new UserService();
 
-export const updateUser = async (req: Request, res: Response) => {
-  const user = await userService.update(+req.params.id, req.body);
-  res.status(200).send(user);
-};
+  getById = async (req: Request, res: Response) => {
+    const user = await this.userService.getById(+req.params.id);
+    res.status(200).send(user);
+  };
+
+  update = async (req: Request, res: Response) => {
+    const user = await this.userService.update(+req.params.id, req.body);
+    res.status(200).send(user);
+  };
+}

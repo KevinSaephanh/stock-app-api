@@ -1,4 +1,5 @@
 import * as Joi from "joi";
+import { paramsSchema } from "./shared.validator";
 
 const passwordRegex = new RegExp("(?=.*d)(?=.*[a-z])(?=.*[A-Z]).*");
 
@@ -16,25 +17,34 @@ const customPasswordValidation = (value: string, customHelpers: Joi.CustomHelper
   return value;
 };
 
-export const emailValidator = Joi.string().required().max(50).email();
-export const usernameValidator = Joi.string().min(3).max(25).required();
-export const passwordValidator = Joi.string().required().custom(customPasswordValidation);
+export const PasswordSchema = Joi.string()
+  .required()
+  .custom(customPasswordValidation)
+  .options({ stripUnknown: true });
 
-export const email = Joi.object().keys({ email: emailValidator });
+export const SignupSchema = Joi.object({
+  username: Joi.string(),
+  email: Joi.string().email(),
+  role: Joi.string().optional(),
+})
+  .options({ stripUnknown: true })
+  .required();
 
-export const password = Joi.object().keys({ password: passwordValidator });
+export const LoginSchema = Joi.object({
+  username: Joi.string(),
+  password: Joi.string(),
+})
+  .options({ stripUnknown: true })
+  .required();
 
-export const signup = Joi.object().keys({
-  email: emailValidator,
-  username: usernameValidator,
-  password: passwordValidator,
-});
+export const SendVerificationEmailSchema = Joi.object({
+  params: paramsSchema,
+}).options({ stripUnknown: true });
 
-export const login = Joi.object().keys({
-  email: Joi.string().required(),
-  password: Joi.string().required(),
-});
-
-export const updateUser = Joi.object().keys({
-  username: usernameValidator,
-});
+export const VerifyEmailSchema = Joi.object({
+  password: PasswordSchema,
+  confirmPassword: Joi.any()
+    .equal(Joi.ref("password"))
+    .required()
+    .options({ messages: { "any.only": "Passwords do not match" } }),
+}).options({ stripUnknown: true });
